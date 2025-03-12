@@ -1,11 +1,11 @@
 import requests
 from datetime import datetime, timezone
+from typing import List, Dict
 
-TOP_MEMES_API_URL = "http://127.0.0.1:8000/top-memes"
 
-def fetch_memes_from_api():
+def fetch_memes_from_api(api_url: str) -> List[Dict]:
     try:
-        response = requests.get(TOP_MEMES_API_URL)
+        response = requests.get(api_url)
         if response.status_code == 200:
             return response.json()
         else:
@@ -16,16 +16,14 @@ def fetch_memes_from_api():
         return []
 
 
-def generate_report():
-    memes = fetch_memes_from_api()
-
+def generate_report(memes: List[Dict]) -> str | None:
     if not memes:
         print("No memes available to generate report.")
         return None
     
-    report_filename = f"top_memes_report_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+    generated_file = f"top_memes_report_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.txt"
 
-    with open(report_filename, "w", encoding="utf-8") as file:
+    with open(generated_file, "w", encoding="utf-8") as file:
         file.write("Top 20 Trending Memes Report\n")
         file.write("=" * 40 + "\n\n")
 
@@ -39,9 +37,5 @@ def generate_report():
             file.write(f"Created At: {meme['created_at']}\n")
             file.write("-" * 40 + "\n")
 
-    print(f"Report generated: {report_filename}")
-    return report_filename
-
-
-if __name__ == "__main__":
-    report_file = generate_report()
+    print(f"Report generated: {generated_file}")
+    return generated_file
