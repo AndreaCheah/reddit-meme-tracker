@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.graphics import renderPDF
 import os
 
-def add_svg_to_pdf(pdf_canvas, svg_filename):
+def add_svg_to_pdf(pdf_canvas, svg_filename, y_position):
     drawing = svg2rlg(svg_filename)
 
     # Get original SVG dimensions
@@ -23,9 +23,9 @@ def add_svg_to_pdf(pdf_canvas, svg_filename):
     drawing.scale(scale_factor, scale_factor)
 
     # Position the graph correctly
-    renderPDF.draw(drawing, pdf_canvas, 100, 350)  # Centered on the page
+    renderPDF.draw(drawing, pdf_canvas, 100, y_position)  # Position dynamically
 
-def generate_meme_report(memes, visualization_path):
+def generate_meme_report(memes, visualization_path, rising_meme_path):
     if not memes:
         print("No memes available to generate a report.")
         return None
@@ -38,7 +38,7 @@ def generate_meme_report(memes, visualization_path):
 
     # Title
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height - 50, "Top 20 Trending Memes Report (Past 24 Hours) 🔥")
+    c.drawString(50, height - 50, "Top 20 Trending Memes Report (Past 24 Hours)")
     c.line(50, height - 55, 550, height - 55)
 
     y_position = height - 80  # Start below title
@@ -65,11 +65,14 @@ def generate_meme_report(memes, visualization_path):
         c.drawString(50, y_position, f"URL: {meme['url']}")
         y_position -= 25
 
-    # Add the resized SVG visualization
     if visualization_path and os.path.exists(visualization_path):
-        c.showPage()  # Ensure it starts on a new page
-        add_svg_to_pdf(c, visualization_path)
+        c.showPage()
+        add_svg_to_pdf(c, visualization_path, 400)
+
+    if rising_meme_path and os.path.exists(rising_meme_path):
+        c.showPage()
+        add_svg_to_pdf(c, rising_meme_path, 400)
 
     c.save()
     print(f"PDF Report generated: {report_filename}")
-    return report_filename, visualization_path
+    return report_filename
