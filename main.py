@@ -15,7 +15,7 @@ async def main():
     visualization_path = generate_meme_visualisation(memes)
 
     print("Generating report...")
-    report_path, _ = generate_meme_report(memes, visualization_path)
+    report_path, visualization_path = generate_meme_report(memes, visualization_path)
 
     print("Fetching Telegram Chat ID...")
     chat_id = get_telegram_chat_id()

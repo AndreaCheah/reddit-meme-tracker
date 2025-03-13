@@ -26,4 +26,4 @@ def send_report(telegram_chat_id, file_path):
     with open(file_path, "rb") as file:
         requests.post(url, data={"chat_id": telegram_chat_id}, files={"document": file})
 
-    print("Report sent via Telegram!")
+    print("PDF Report sent via Telegram!")
