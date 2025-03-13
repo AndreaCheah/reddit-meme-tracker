@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timezone
 from matplotlib.lines import Line2D
+from utils.time import format_singapore_time_for_filename
 
 def gen_upvotes_vs_comments_graph(memes):
     if not memes:
@@ -48,7 +49,7 @@ def gen_upvotes_vs_comments_graph(memes):
     ax.legend(handles=legend_elements, loc="upper left", fontsize=10)
 
     # Save as SVG to preserve annotations
-    svg_filename = f"meme_visualization_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.svg"
+    svg_filename = f"meme_visualization_{format_singapore_time_for_filename()}.svg"
     plt.savefig(svg_filename, format="svg")
     plt.close()
 
@@ -90,7 +91,7 @@ def gen_fastest_rising_memes_graph(memes):
     plt.tight_layout()
 
     # Save as SVG
-    svg_filename = f"fastest_rising_memes_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.svg"
+    svg_filename = f"fastest_rising_memes_{format_singapore_time_for_filename()}.svg"
     plt.savefig(svg_filename, format="svg")
     plt.close()
 

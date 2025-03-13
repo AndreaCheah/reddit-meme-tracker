@@ -1,8 +1,9 @@
-from datetime import datetime, timezone
 from svglib.svglib import svg2rlg
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.graphics import renderPDF
+from reportlab.lib.utils import ImageReader
+from utils.time import format_singapore_time_for_filename, format_singapore_datetime_for_report
 import os
 
 def add_svg_to_pdf(pdf_canvas, svg_filename, y_position):
@@ -25,54 +26,104 @@ def add_svg_to_pdf(pdf_canvas, svg_filename, y_position):
     # Position the graph correctly
     renderPDF.draw(drawing, pdf_canvas, 100, y_position)  # Position dynamically
 
+def wrap_text(text, max_width, font_size, canvas):
+    wrapped_text = []
+    words = text.split()
+    line = ""
+
+    for word in words:
+        test_line = line + " " + word if line else word
+        text_width = canvas.stringWidth(test_line, "Helvetica", font_size)
+        if text_width <= max_width:
+            line = test_line
+        else:
+            wrapped_text.append(line)
+            line = word  # Start a new line
+
+    wrapped_text.append(line)  # Append the last line
+    return wrapped_text
+
+def add_meme_to_pdf(pdf_canvas, meme):
+    pdf_canvas.showPage()
+    pdf_canvas.setFont("Helvetica-Bold", 16)
+    pdf_canvas.drawString(50, letter[1] - 50, f"Rank: {meme['rank']}")
+
+    pdf_canvas.setFont("Helvetica", 12)
+    y_position = letter[1] - 80  # Start below the title
+
+    # Define max text width for wrapping
+    max_text_width = 500
+
+    # Wrap and draw title
+    pdf_canvas.setFont("Helvetica-Bold", 12)
+    wrapped_title = wrap_text(f"Title: {meme['title']}", max_text_width, 12, pdf_canvas)
+    for line in wrapped_title:
+        pdf_canvas.drawString(50, y_position, line)
+        y_position -= 15
+
+    # Wrap and draw score, comments, upvote ratio
+    pdf_canvas.setFont("Helvetica", 12)
+    pdf_canvas.drawString(50, y_position, f"Score: {meme['score']}")
+    y_position -= 15
+    pdf_canvas.drawString(50, y_position, f"Comments: {meme['num_comments']}")
+    y_position -= 15
+    pdf_canvas.drawString(50, y_position, f"Upvote Ratio: {meme['upvote_ratio'] * 100:.2f}%")
+    y_position -= 15
+
+    # Wrap and draw URL
+    pdf_canvas.setFont("Helvetica", 12)
+    wrapped_url = wrap_text(f"URL: {meme['url']}", max_text_width, 10, pdf_canvas)
+    for line in wrapped_url:
+        pdf_canvas.drawString(50, y_position, line)
+        y_position -= 15
+
+    # Draw Meme Image (if available)
+    if meme.get("image_url"):
+        try:
+            img = ImageReader(meme["image_url"])
+            img_width, img_height = 300, 300
+            y_position -= img_height + 20  # Leave space for the image
+            pdf_canvas.drawImage(img, 50, y_position, width=img_width, height=img_height, preserveAspectRatio=True, mask='auto')
+        except Exception as e:
+            print(f"Error loading meme image: {e}")
+    else:
+        pdf_canvas.setFont("Helvetica-Oblique", 12)  # Italic font
+        pdf_canvas.drawString(50, y_position - 20, "No image available")
+
 def generate_meme_report(memes, visualization_path, rising_meme_path):
     if not memes:
         print("No memes available to generate a report.")
         return None
 
-    report_filename = f"top_memes_report_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
-    
-    # Create a new PDF file
-    c = canvas.Canvas(report_filename, pagesize=letter)
-    width, height = letter
+    # Generate a timestamped filename
+    report_filename = f"top_memes_report_{format_singapore_time_for_filename()}.pdf"
+    pdf_canvas = canvas.Canvas(report_filename, pagesize=letter)
 
-    # Title
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height - 50, "Top 20 Trending Memes Report (Past 24 Hours)")
-    c.line(50, height - 55, 550, height - 55)
+    # Add Title Page
+    pdf_canvas.setFont("Helvetica-Bold", 20)
+    pdf_canvas.drawString(50, letter[1] - 100, "Top 20 Trending Memes Report (Past 24 Hours)")
+    pdf_canvas.setFont("Helvetica", 14)
+    pdf_canvas.drawString(50, letter[1] - 140, f"Generated on: {format_singapore_datetime_for_report()}")
 
-    y_position = height - 80  # Start below title
-
+    # Add each meme on a new page
     for meme in memes:
-        if y_position < 120:
-            c.showPage()
-            c.setFont("Helvetica", 12)
-            y_position = height - 50
+        add_meme_to_pdf(pdf_canvas, meme)
 
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y_position, f"Rank: {meme['rank']}")
-        y_position -= 15
-
-        c.setFont("Helvetica", 11)
-        c.drawString(50, y_position, f"Title: {meme['title']}")
-        y_position -= 15
-        c.drawString(50, y_position, f"Score: {meme['score']}")
-        y_position -= 15
-        c.drawString(50, y_position, f"Comments: {meme['num_comments']}")
-        y_position -= 15
-        c.drawString(50, y_position, f"Upvote Ratio: {meme['upvote_ratio']*100:.2f}%")
-        y_position -= 15
-        c.drawString(50, y_position, f"URL: {meme['url']}")
-        y_position -= 25
-
+    # Add Visualization Pages
     if visualization_path and os.path.exists(visualization_path):
-        c.showPage()
-        add_svg_to_pdf(c, visualization_path, 400)
+        pdf_canvas.showPage()
+        pdf_canvas.setFont("Helvetica-Bold", 16)
+        pdf_canvas.drawString(50, letter[1] - 50, "Upvotes vs Comments Chart")
+        add_svg_to_pdf(pdf_canvas, visualization_path, 400)
 
     if rising_meme_path and os.path.exists(rising_meme_path):
-        c.showPage()
-        add_svg_to_pdf(c, rising_meme_path, 400)
+        pdf_canvas.showPage()
+        pdf_canvas.setFont("Helvetica-Bold", 16)
+        pdf_canvas.drawString(50, letter[1] - 50, "Fastest Rising Memes Chart")
+        add_svg_to_pdf(pdf_canvas, rising_meme_path, 400)
 
-    c.save()
+    # Save the PDF
+    pdf_canvas.save()
     print(f"PDF Report generated: {report_filename}")
+
     return report_filename
