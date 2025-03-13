@@ -1,47 +1,54 @@
-import asyncpraw
-import os
-from datetime import datetime, timedelta, timezone
-from utils.env_loader import load_environment
+import matplotlib.pyplot as plt
+import numpy as np
+from datetime import datetime, timezone
 
-load_environment()
+def generate_meme_visualisation(memes):
+    if not memes:
+        print("No memes available for visualization.")
+        return None
 
-async def fetch_top_20_memes():
-    try:
-        async with asyncpraw.Reddit(
-            client_id=os.getenv("CLIENT_ID"),
-            client_secret=os.getenv("CLIENT_SECRET"),
-            user_agent=os.getenv("USER_AGENT")
-        ) as reddit:
+    scores = [meme["score"] for meme in memes]
+    comments = [meme["num_comments"] for meme in memes]
+    upvote_ratios = [meme["upvote_ratio"] for meme in memes]
+    nsfw_flags = [meme["over_18"] for meme in memes]
 
-            subreddit = await reddit.subreddit("memes")
-            collected_memes = []
-            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
-            rank = 1
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-            async for post in subreddit.top(time_filter="day", limit=100):
-                post_creation_time = datetime.fromtimestamp(post.created_utc, tz=timezone.utc)
+    # 🔴 Better Color Coding: Red = NSFW, Blue = SFW
+    colors = np.array(['red' if nsfw else 'blue' for nsfw in nsfw_flags])
 
-                if post_creation_time >= cutoff_time:
-                    collected_memes.append({
-                        "id": post.id,
-                        "rank": rank,
-                        "title": post.title,
-                        "score": post.score,
-                        "num_comments": post.num_comments,
-                        "url": f"https://www.reddit.com{post.permalink}",
-                        "image_url": post.url if post.url.endswith(('.jpg', '.jpeg', '.png', '.gif')) else None,
-                        "over_18": post.over_18,
-                        "upvote_ratio": post.upvote_ratio,
-                        "created_at": post_creation_time.isoformat(),
-                        "crawled_at": datetime.now(timezone.utc).isoformat(),
-                    })
-                    rank += 1
+    # 🔵 Increase Size Scaling for Visibility
+    sizes = np.array(upvote_ratios) * 300  # Increased for effect
 
-                if len(collected_memes) >= 20:
-                    break
+    # ✅ Add More Transparency for Better Visibility
+    scatter = ax.scatter(scores, comments, c=colors, s=sizes, alpha=0.8, edgecolors="black")
 
-            return collected_memes
+    # ✅ Add Annotations for the Top 5 Memes
+    sorted_memes = sorted(memes, key=lambda x: x["score"], reverse=True)[:5]
+    for meme in sorted_memes:
+        ax.annotate(meme["title"][:15],  # Display only the first 15 characters
+                    (meme["score"], meme["num_comments"]),
+                    fontsize=9, alpha=0.7, color="black",
+                    bbox=dict(facecolor='white', alpha=0.5, edgecolor="black"))
 
-    except Exception as e:
-        print(f"Error fetching memes from Reddit: {e}")
-        return []
+    # ✅ Improve Readability with Log Scale for Comments
+    ax.set_yscale("log")  # Log scale helps if some memes have way more comments
+
+    ax.set_title("Meme Popularity: Upvotes vs Comments")
+    ax.set_xlabel("Upvotes")
+    ax.set_ylabel("Comments")
+    ax.grid(True)
+
+    # ✅ Add a Legend Manually
+    from matplotlib.lines import Line2D
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='SFW', markerfacecolor='blue', markersize=10),
+                       Line2D([0], [0], marker='o', color='w', label='NSFW', markerfacecolor='red', markersize=10)]
+    ax.legend(handles=legend_elements, loc="upper left")
+
+    # ✅ Save Image
+    image_filename = f"meme_visualization_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.png"
+    plt.savefig(image_filename)
+    plt.close()
+
+    print(f"Visualization saved as: {image_filename}")
+    return image_filename

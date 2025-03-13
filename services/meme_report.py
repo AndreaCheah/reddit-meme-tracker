@@ -1,8 +1,29 @@
 from datetime import datetime, timezone
+from svglib.svglib import svg2rlg
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
+from reportlab.graphics import renderPDF
 import os
+
+def add_svg_to_pdf(pdf_canvas, svg_filename):
+    drawing = svg2rlg(svg_filename)
+
+    # Get original SVG dimensions
+    orig_width, orig_height = drawing.width, drawing.height
+
+    # Target size (letter size)
+    max_width, max_height = 400, 300  # Scale appropriately for PDF
+
+    # Calculate the scaling factor
+    scale_factor = min(max_width / orig_width, max_height / orig_height)
+
+    # Apply scaling
+    drawing.width *= scale_factor
+    drawing.height *= scale_factor
+    drawing.scale(scale_factor, scale_factor)
+
+    # Position the graph correctly
+    renderPDF.draw(drawing, pdf_canvas, 100, 350)  # Centered on the page
 
 def generate_meme_report(memes, visualization_path):
     if not memes:
@@ -17,25 +38,21 @@ def generate_meme_report(memes, visualization_path):
 
     # Title
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height - 50, "Top 20 Trending Memes Report (Past 24 Hours)")
+    c.drawString(50, height - 50, "Top 20 Trending Memes Report (Past 24 Hours) 🔥")
     c.line(50, height - 55, 550, height - 55)
 
     y_position = height - 80  # Start below title
 
     for meme in memes:
-        # Ensures y_position >= 120 so that there's enough space for the last meme on the page 
-        # If the page runs out of space, create a new page and reset y_position
         if y_position < 120:
             c.showPage()
             c.setFont("Helvetica", 12)
             y_position = height - 50
 
-        # Rank as header
         c.setFont("Helvetica-Bold", 12)
         c.drawString(50, y_position, f"Rank: {meme['rank']}")
         y_position -= 15
 
-        # Meme details
         c.setFont("Helvetica", 11)
         c.drawString(50, y_position, f"Title: {meme['title']}")
         y_position -= 15
@@ -43,23 +60,16 @@ def generate_meme_report(memes, visualization_path):
         y_position -= 15
         c.drawString(50, y_position, f"Comments: {meme['num_comments']}")
         y_position -= 15
-        c.drawString(50, y_position, f"Upvote Ratio: {meme['upvote_ratio']}")
+        c.drawString(50, y_position, f"Upvote Ratio: {meme['upvote_ratio']*100:.2f}%")
         y_position -= 15
         c.drawString(50, y_position, f"URL: {meme['url']}")
         y_position -= 25
 
+    # Add the resized SVG visualization
     if visualization_path and os.path.exists(visualization_path):
-        c.showPage()  # Ensure the graph is on a new page
-        try:
-            img = ImageReader(visualization_path)
-            img_width = 400
-            img_height = 300
-            c.drawImage(img, (width - img_width) / 2, height - img_height - 50, 
-                        width=img_width, height=img_height, preserveAspectRatio=True, mask='auto')
-        except Exception as e:
-            print(f"Error adding image to PDF: {e}")
+        c.showPage()  # Ensure it starts on a new page
+        add_svg_to_pdf(c, visualization_path)
 
     c.save()
-
     print(f"PDF Report generated: {report_filename}")
     return report_filename, visualization_path
