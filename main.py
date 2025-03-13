@@ -1,35 +1,30 @@
 import asyncio
-from generate_report import fetch_memes_from_api, generate_report
-from telegram_bot import get_telegram_chat_id, send_report_via_telegram
+from fetcher.fetch_memes import fetch_memes
+from services.meme_visualisation import generate_meme_visualisation
+from services.meme_report import generate_meme_report
+from telegram.telegram_bot import get_telegram_chat_id, send_report
 
-API_URL = "http://127.0.0.1:8000/top-memes"
-
-
-async def generate_and_send_report():
+async def main():
     print("Fetching memes...")
-    memes = fetch_memes_from_api(API_URL)
-
+    memes = fetch_memes()
     if not memes:
         print("No memes available. Exiting.")
         return
 
-    print("Generating report...")
-    report_file = generate_report(memes)
+    print("Generating visualization...")
+    visualization_path = generate_meme_visualisation(memes)
 
-    if not report_file:
-        print("Failed to generate report. Exiting.")
-        return
+    print("Generating report...")
+    report_path, _ = generate_meme_report(memes, visualization_path)
 
     print("Fetching Telegram Chat ID...")
-    telegram_chat_id = get_telegram_chat_id()
-
-    if not telegram_chat_id:
+    chat_id = get_telegram_chat_id()
+    if not chat_id:
         print("Cannot send report. No chat ID found.")
         return
 
     print("Sending report via Telegram...")
-    await send_report_via_telegram(telegram_chat_id, report_file)
-
+    send_report(chat_id, report_path)
 
 if __name__ == "__main__":
-    asyncio.run(generate_and_send_report())
+    asyncio.run(main())

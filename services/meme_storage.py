@@ -1,19 +1,16 @@
 from supabase import create_client
 import os
-from dotenv import load_dotenv
-from datetime import datetime, timezone
-import asyncio
-from scraper import get_top_20_memes # TODO: remove later
+from utils.env_loader import load_environment
 
-load_dotenv()
+load_environment()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-async def store_memes_in_db(memes_list):
+async def save_memes_to_db(memes_list):
     if not memes_list:
-        print("No memes to store in database.")
+        print("No memes to store in the database.")
         return
     
     try:
@@ -24,9 +21,5 @@ async def store_memes_in_db(memes_list):
         
         print("Successfully stored memes in the database.")
     
-    except Exception as e:
-        print(f"Error storing memes in database: {e}")
-
-if __name__ == "__main__":
-    memes = asyncio.run(get_top_20_memes())
-    data = asyncio.run(store_memes_in_db(memes))
+    except Exception as error:
+        print(f"Error storing memes in database: {error}")
