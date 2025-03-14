@@ -86,11 +86,35 @@ def add_meme_to_pdf(pdf_canvas, meme):
             pdf_canvas.drawImage(img, 50, y_position, width=img_width, height=img_height, preserveAspectRatio=True, mask='auto')
         except Exception as e:
             print(f"Error loading meme image: {e}")
+            pdf_canvas.setFont("Helvetica-Oblique", 12)  # Italic font
+            pdf_canvas.drawString(50, y_position - 20, "No image available")
     else:
         pdf_canvas.setFont("Helvetica-Oblique", 12)  # Italic font
         pdf_canvas.drawString(50, y_position - 20, "No image available")
 
-def generate_meme_report(memes, upvotes_vs_comments_graph, fastest_rising_memes_graph):
+def add_graphs_to_pdf(pdf_canvas, upvotes_vs_comments_graph, upvotes_per_hour_graph, upvote_ratio_graph):
+    # Add Upvotes vs Comments Graph
+    if upvotes_vs_comments_graph and os.path.exists(upvotes_vs_comments_graph):
+        pdf_canvas.showPage()
+        pdf_canvas.setFont("Helvetica-Bold", 16)
+        pdf_canvas.drawString(50, letter[1] - 50, "Meme Engagement Level: Upvotes vs Comments Graph")
+        add_svg_to_pdf(pdf_canvas, upvotes_vs_comments_graph, 400)
+
+    # Add Upvotes Per Hour Graph
+    if upvotes_per_hour_graph and os.path.exists(upvotes_per_hour_graph):
+        pdf_canvas.showPage()
+        pdf_canvas.setFont("Helvetica-Bold", 16)
+        pdf_canvas.drawString(50, letter[1] - 50, "Meme Trendiness: Upvotes Per Hour Graph")
+        add_svg_to_pdf(pdf_canvas, upvotes_per_hour_graph, 400)
+
+    # Add Upvote Ratio Graph (Meme Controversy Chart)
+    if upvote_ratio_graph and os.path.exists(upvote_ratio_graph):
+        pdf_canvas.showPage()
+        pdf_canvas.setFont("Helvetica-Bold", 16)
+        pdf_canvas.drawString(50, letter[1] - 50, "Meme Controversy: Upvote Ratio Graph")
+        add_svg_to_pdf(pdf_canvas, upvote_ratio_graph, 400)
+
+def generate_meme_report(memes, upvotes_vs_comments_graph, upvotes_per_hour_graph, upvote_ratio_graph):
     if not memes:
         print("No memes available to generate a report.")
         return None
@@ -109,18 +133,7 @@ def generate_meme_report(memes, upvotes_vs_comments_graph, fastest_rising_memes_
     for meme in memes:
         add_meme_to_pdf(pdf_canvas, meme)
 
-    # Add Visualization Pages
-    if upvotes_vs_comments_graph and os.path.exists(upvotes_vs_comments_graph):
-        pdf_canvas.showPage()
-        pdf_canvas.setFont("Helvetica-Bold", 16)
-        pdf_canvas.drawString(50, letter[1] - 50, "Upvotes vs Comments Chart")
-        add_svg_to_pdf(pdf_canvas, upvotes_vs_comments_graph, 400)
-
-    if fastest_rising_memes_graph and os.path.exists(fastest_rising_memes_graph):
-        pdf_canvas.showPage()
-        pdf_canvas.setFont("Helvetica-Bold", 16)
-        pdf_canvas.drawString(50, letter[1] - 50, "Fastest Rising Memes Chart")
-        add_svg_to_pdf(pdf_canvas, fastest_rising_memes_graph, 400)
+    add_graphs_to_pdf(pdf_canvas, upvotes_vs_comments_graph, upvotes_per_hour_graph, upvote_ratio_graph)
 
     # Save the PDF
     pdf_canvas.save()

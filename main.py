@@ -1,6 +1,6 @@
 import asyncio
 from fetcher.fetch_memes import fetch_memes
-from services.meme_visualisation import gen_upvotes_vs_comments_graph, gen_fastest_rising_memes_graph
+from services.meme_visualisation import gen_upvotes_vs_comments_graph, gen_upvotes_per_hour_graph, gen_upvote_ratio_graph
 from services.meme_report import generate_meme_report
 from telegram.telegram_bot import get_telegram_chat_id, send_report
 
@@ -13,11 +13,11 @@ async def main():
 
     print("Generating visualization...")
     upvotes_vs_comments_graph = gen_upvotes_vs_comments_graph(memes)
-    fastest_rising_memes_graph = gen_fastest_rising_memes_graph(memes)
-    
+    upvotes_per_hour_graph = gen_upvotes_per_hour_graph(memes)
+    upvote_ratio_graph = gen_upvote_ratio_graph(memes)
 
     print("Generating report...")
-    report_path = generate_meme_report(memes, upvotes_vs_comments_graph, fastest_rising_memes_graph)
+    report_path = generate_meme_report(memes, upvotes_vs_comments_graph, upvotes_per_hour_graph, upvote_ratio_graph)
 
     print("Fetching Telegram Chat ID...")
     chat_id = get_telegram_chat_id()
