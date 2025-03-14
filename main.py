@@ -12,11 +12,12 @@ async def main():
         return
 
     print("Generating visualization...")
-    visualization_path = gen_upvotes_vs_comments_graph(memes)
-    rising_meme_path = gen_fastest_rising_memes_graph(memes)
+    upvotes_vs_comments_graph = gen_upvotes_vs_comments_graph(memes)
+    fastest_rising_memes_graph = gen_fastest_rising_memes_graph(memes)
+    
 
     print("Generating report...")
-    report_path = generate_meme_report(memes, visualization_path, rising_meme_path)
+    report_path = generate_meme_report(memes, upvotes_vs_comments_graph, fastest_rising_memes_graph)
 
     print("Fetching Telegram Chat ID...")
     chat_id = get_telegram_chat_id()

@@ -90,7 +90,7 @@ def add_meme_to_pdf(pdf_canvas, meme):
         pdf_canvas.setFont("Helvetica-Oblique", 12)  # Italic font
         pdf_canvas.drawString(50, y_position - 20, "No image available")
 
-def generate_meme_report(memes, visualization_path, rising_meme_path):
+def generate_meme_report(memes, upvotes_vs_comments_graph, fastest_rising_memes_graph):
     if not memes:
         print("No memes available to generate a report.")
         return None
@@ -110,17 +110,17 @@ def generate_meme_report(memes, visualization_path, rising_meme_path):
         add_meme_to_pdf(pdf_canvas, meme)
 
     # Add Visualization Pages
-    if visualization_path and os.path.exists(visualization_path):
+    if upvotes_vs_comments_graph and os.path.exists(upvotes_vs_comments_graph):
         pdf_canvas.showPage()
         pdf_canvas.setFont("Helvetica-Bold", 16)
         pdf_canvas.drawString(50, letter[1] - 50, "Upvotes vs Comments Chart")
-        add_svg_to_pdf(pdf_canvas, visualization_path, 400)
+        add_svg_to_pdf(pdf_canvas, upvotes_vs_comments_graph, 400)
 
-    if rising_meme_path and os.path.exists(rising_meme_path):
+    if fastest_rising_memes_graph and os.path.exists(fastest_rising_memes_graph):
         pdf_canvas.showPage()
         pdf_canvas.setFont("Helvetica-Bold", 16)
         pdf_canvas.drawString(50, letter[1] - 50, "Fastest Rising Memes Chart")
-        add_svg_to_pdf(pdf_canvas, rising_meme_path, 400)
+        add_svg_to_pdf(pdf_canvas, fastest_rising_memes_graph, 400)
 
     # Save the PDF
     pdf_canvas.save()

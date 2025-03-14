@@ -29,7 +29,7 @@ def gen_upvotes_vs_comments_graph(memes):
                 fontsize=10, weight="bold", ha="right", color="black",
                 bbox=dict(facecolor="white", edgecolor="black", alpha=0.7))
 
-    ax.set_title("Meme Popularity: Upvotes vs Comments")
+    ax.set_title("Meme Engagement: Upvotes vs Comments")
     ax.set_xlabel("Upvotes")
     ax.set_ylabel("Comments")
     ax.grid(True)
@@ -96,4 +96,36 @@ def gen_fastest_rising_memes_graph(memes):
     plt.close()
 
     print(f"Fastest rising meme visualization saved as: {svg_filename}")
+    return svg_filename
+
+
+def gen_upvote_ratio_chart(memes):
+    if not memes:
+        print("No memes available for visualization.")
+        return None
+
+    # Extract upvote ratios and titles with ranks
+    upvote_ratios = [meme["upvote_ratio"] * 100 for meme in memes]  # Convert to percentage
+    titles_with_ranks = [f"{meme['rank']}. {meme['title'][:20]}" for meme in memes]  # Shorten titles
+
+    # Sort by upvote ratio (Ascending) → Most controversial memes first
+    sorted_indices = np.argsort(upvote_ratios)  # Lowest ratios at the top
+    sorted_upvote_ratios = np.array(upvote_ratios)[sorted_indices]
+    sorted_titles = np.array(titles_with_ranks)[sorted_indices]
+
+    # Create a horizontal bar chart
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.barh(sorted_titles, sorted_upvote_ratios, color='orange', alpha=0.7)
+    ax.set_xlabel("Upvote Ratio (%)")
+    ax.set_ylabel("Meme Titles (Ranked)")
+    ax.set_title("Meme Controversy Chart (Lower = More Controversial)")
+    ax.invert_yaxis()  # Most controversial memes at the top
+    plt.tight_layout()
+
+    # Save as SVG
+    svg_filename = f"upvote_ratio_chart_{format_singapore_time_for_filename()}.svg"
+    plt.savefig(svg_filename, format="svg")
+    plt.close()
+
+    print(f"Upvote ratio visualization saved as: {svg_filename}")
     return svg_filename
