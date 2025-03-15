@@ -3,6 +3,7 @@ from fetcher.fetch_memes import fetch_memes
 from services.meme_visualisation import gen_upvotes_vs_comments_graph, gen_upvotes_per_hour_graph, gen_upvote_ratio_graph
 from services.meme_report import generate_meme_report
 from telegram.telegram_bot import get_telegram_chat_id, send_report
+from services.meme_storage import save_memes_to_db
 
 async def main():
     print("Fetching memes...")
@@ -10,6 +11,8 @@ async def main():
     if not memes:
         print("No memes available. Exiting.")
         return
+    
+    await save_memes_to_db(memes)
 
     print("Generating visualization...")
     upvotes_vs_comments_graph = gen_upvotes_vs_comments_graph(memes)

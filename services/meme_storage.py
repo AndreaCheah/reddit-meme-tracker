@@ -1,8 +1,6 @@
 from supabase import create_client
 import os
 from dotenv import load_dotenv
-import asyncio
-# from meme_scraper import scrape_top_20_memes
 
 load_dotenv()
 
@@ -25,7 +23,3 @@ async def save_memes_to_db(memes_list):
     
     except Exception as error:
         print(f"Error storing memes in database: {error}")
-
-# if __name__ == "__main__":
-#   memes = asyncio.run(scrape_top_20_memes())
-#   asyncio.run(save_memes_to_db(memes))
