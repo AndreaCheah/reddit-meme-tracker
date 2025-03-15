@@ -49,7 +49,6 @@ def gen_upvotes_vs_comments_graph(memes):
     plt.savefig(svg_filename, format="svg", bbox_inches="tight")  # Ensure the full plot (including legend) is saved
     plt.close()
 
-    print(f"Upvotes vs comments graph saved as: {svg_filename}")
     return svg_filename
 
 def gen_upvotes_per_hour_graph(memes):
@@ -91,7 +90,6 @@ def gen_upvotes_per_hour_graph(memes):
     plt.savefig(svg_filename, format="svg")
     plt.close()
 
-    print(f"Upvotes per hour graph saved as: {svg_filename}")
     return svg_filename
 
 
@@ -137,5 +135,4 @@ def gen_upvote_ratio_graph(memes):
     plt.savefig(svg_filename, format="svg")
     plt.close()
 
-    print(f"Upvote ratio graph saved as: {svg_filename}")
     return svg_filename

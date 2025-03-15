@@ -137,6 +137,5 @@ def generate_meme_report(memes, upvotes_vs_comments_graph, upvotes_per_hour_grap
 
     # Save the PDF
     pdf_canvas.save()
-    print(f"PDF Report generated: {report_filename}")
 
     return report_filename
