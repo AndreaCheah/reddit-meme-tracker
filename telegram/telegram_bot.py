@@ -1,8 +1,8 @@
 import requests
 import os
-from utils.env_loader import load_environment
+from dotenv import load_dotenv
 
-load_environment()
+load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 

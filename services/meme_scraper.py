@@ -1,11 +1,11 @@
 import asyncpraw
 import os
 from datetime import datetime, timedelta, timezone
-from utils.env_loader import load_environment
+from dotenv import load_dotenv
 
-load_environment()
+load_dotenv()
 
-async def fetch_top_20_memes():
+async def scrape_top_20_memes():
     try:
         async with asyncpraw.Reddit(
             client_id=os.getenv("CLIENT_ID"),
